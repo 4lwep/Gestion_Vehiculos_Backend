@@ -1,0 +1,588 @@
+openapi: 3.1.1
+info:
+  title: "Shop API Documentation"
+  description: |
+    # A modern REST API built with Next.js
+
+    Esta API proporciona las siguientes funcionalidades:
+
+    ## **Autenticación de usuarios**
+    - Registro de usuarios
+    - Login de usuarios
+    - Verificar estado de autenticación
+
+    ## **Productos**
+    - Crear productos
+    - Consultar productos
+    - Actualizar productos
+    - Eliminar productos
+    
+    ## **Imágenes**
+    - Subir imágenes en cualquier formato (`image/*`)
+    - Consultar imágenes subidas y sus metadatos
+    - Actualizar imágenes subidas
+    - Eliminar imágenes subidas
+
+    > **NOTA:**
+    > Las siguientes propiedades deben tener **valores únicos**: `title` y `slug` de un producto, así como el `email` de un usuario.
+    >
+    > - Si al introducir o modificar un producto obtienes un **código 409**, es porque ya existe un producto con el mismo `title` o `slug`.
+    > - Si al registrar un usuario obtienes un **código 409**, es porque ya existe un usuario con el mismo `email`.
+
+    Para más información, visita [nuestro repositorio](https://github.com/jamj2000/nxapi-shop).
+  version: "1.0.0"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserCreate:
+      type: object
+      required:
+        - email
+        - password
+        - fullName
+      properties:
+        email:
+          type: string
+          description: A valid email (unique)
+          nullable: false
+        password:
+          type: string
+        fullName:
+          type: string
+
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          description: A valid email
+          nullable: false
+        password:
+          type: string
+          description: The password for this user
+          nullable: false
+
+    Product:
+      type: object
+      required:
+        - id
+        - title
+        - price
+        - description
+        - slug
+        - stock
+        - sizes
+        - gender
+        - tags
+        - images
+      properties:
+        id:
+          type: string
+          description: Product ID
+          uniqueItems: true
+          example: cd533345-f1f3-48c9-a62e-7dc2da50c8f8
+        title:
+          type: string
+          description: Product Title
+          uniqueItems: true
+          example: T-Shirt Teslo
+        price:
+          type: number
+          description: Product price
+          example: 0
+        description:
+          type: string
+          description: Product description
+          default: null
+          example: Anim reprehenderit nulla in anim mollit minim irure commodo.
+        slug:
+          type: string
+          description: Product SLUG - for SEO
+          uniqueItems: true
+          example: t_shirt_teslo
+        stock:
+          type: number
+          description: Product stock
+          default: 0
+          example: 10
+        sizes:
+          type: array
+          description: Product sizes
+          items:
+            type: string
+          example:
+            - M
+            - XL
+            - XXL
+        gender:
+          type: string
+          description: Product gender
+          example: women
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    ProductCreate:
+      type: object
+      required:
+        - title
+        - price
+        - description
+        - slug
+        - stock
+        - sizes
+        - gender
+        - tags
+        - images
+      properties:
+        title:
+          type: string
+          description: Product title (unique)
+          nullable: false
+          minLength: 1
+        price:
+          type: number
+        description:
+          type: string
+        slug:
+          type: string
+          description: Product slug (unique)
+          nullable: false
+          minLength: 1
+        stock:
+          type: number
+        sizes:
+          type: array
+          items:
+            type: string
+        gender:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    ProductUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Product title (unique)
+          nullable: false
+          minLength: 1
+        price:
+          type: number
+        description:
+          type: string
+        slug:
+          type: string
+          description: Product slug (unique)
+          nullable: false
+          minLength: 1
+        stock:
+          type: number
+        sizes:
+          type: array
+          items:
+            type: string
+        gender:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+
+    ImageInfo:
+      type: object
+      properties:
+        asset_id:
+          type: string
+          nullable: false
+          example: 9dbbd654a6986807fc5329032b19877d
+        public_id:
+          type: string
+          nullable: false
+          example: file_gvfsgc
+        format:
+          type: string
+          nullable: false
+          description: The format of the image (webp, jpg, png, etc)
+          example: webp
+        resource_type:
+          type: string
+          nullable: false
+          description: The type of the resource (image, video, etc)
+          example: image
+        bytes:
+          type: number
+          nullable: false
+          description: The size of the image in bytes
+          example: 26468
+        width:
+          type: number
+          nullable: false
+          description: The width of the image in pixels
+          example: 852
+        height:
+          type: number
+          nullable: false
+          description: The height of the image in pixels
+          example: 852
+        asset_folder:
+          type: string
+          nullable: false
+          description: The folder where the image is stored
+          example: shop
+        secure_url:
+          type: string
+          format: uri
+          nullable: false
+          description: The secure URL of the image
+          example: https://res.cloudinary.com/jamunoz/image/upload/v1768483589/8528839-00-A_2_sbeihu.webp
+
+paths:
+
+  /api/auth/register:
+    post:
+      summary: Register
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        "201":
+          description: Registration successful
+        "400":
+          description: Missing required fields
+        "409":
+          description: User already exists
+
+  /api/auth/login:
+    post:
+      summary: Login
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        "201":
+          description: Login successful
+        "400":
+          description: Missing email or password
+        "401":
+          description: Invalid credentials
+        "404":
+          description: User not found
+
+  /api/auth/check-status:
+    get:
+      summary: Check authentication status
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Check successful
+        "401":
+          description: Unauthorized / Invalid token
+        "404":
+          description: User not found
+
+  /api/products:
+    post:
+      summary: Create new product
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCreate"
+      responses:
+        "201":
+          description: Product was created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "400":
+          description: Missing data
+        "401":
+          description: Unauthorized. Token expired or invalid.
+        "409":
+          description: Product title or slug already exists
+
+    get:
+      summary: List products
+      tags:
+        - Products
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          description: How many rows do you need
+          schema:
+            type: number
+            default: 10
+        - name: offset
+          in: query
+          required: true
+          description: How many rows do you want to skip
+          schema:
+            type: number
+            default: 0
+      responses:
+        "200":
+          description: Product list
+        "500":
+          description: Internal server error
+
+  /api/products/all/{term}:
+    get:
+      summary: Search products
+      tags:
+        - Products
+      parameters:
+        - name: term
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+        "500":
+          description: Internal server error
+
+  /api/products/{idOrSlug}:
+    get:
+      summary: Find product by ID or slug
+      tags:
+        - Products
+      parameters:
+        - name: idOrSlug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "500":
+          description: Internal server error
+
+  /api/products/{id}:
+    patch:
+      summary: Update product
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized. Token expired or invalid.
+        "409":
+          description: Product title or slug already exists
+    delete:
+      summary: Delete product
+      tags:
+        - Products
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "401":
+          description: Unauthorized. Token expired or invalid.
+        "500":
+          description: Internal server error
+
+  /api/files/product:
+    post:
+      summary: Upload product image
+      tags:
+        - Files - Get and Upload
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          image/*:   # Cualquier imagen
+            schema:
+              type: string
+              format: binary
+              description: "Archivo de imagen (PNG, JPEG, GIF, WebP, etc.)"
+        # content:
+        #   multipart/form-data:
+        #     schema:
+        #       type: object
+        #       properties:
+        #         file:
+        #           type: string
+        #           format: binary
+        #           description: Image file (any image/*)
+      responses:
+        "201":
+          description: Uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageInfo"
+        "401":
+          description: Unauthorized. Token expired or invalid.
+        "500":
+          description: Internal server error
+    get:
+      summary: List images
+      tags:
+        - Files - Get and Upload
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          description: How many rows do you need
+          schema:
+            type: number
+            default: 10
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal server error  
+
+  /api/files/product/{imageName}:
+    get:
+      summary: Get product image
+      tags:
+        - Files - Get and Upload
+      parameters:
+        - name: imageName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: "#/components/schemas/ImageInfo"
+        "404":
+          description: Image not found
+    put:
+      summary: Change product image
+      tags:
+        - Files - Get and Upload
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: imageName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          image/*:   # Cualquier imagen
+            schema:
+              type: string
+              format: binary
+              description: "Archivo de imagen (PNG, JPEG, GIF, WebP, etc.)"
+      responses:
+        "201":
+          description: Image updated or created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageInfo"
+        "401":
+          description: Unauthorized. Token expired or invalid.
+        "500":
+          description: Internal server error              
+    delete:
+      summary: Delete product image
+      tags:
+        - Files - Get and Upload
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: imageName
+          in: path
+          required: true
+          schema:
+            type: string   
+      responses:
+        "200":
+          description: Image deleted successfully
+        "401":
+          description: Unauthorized. Token expired or invalid.
+        "500":
+          description: Internal server error             

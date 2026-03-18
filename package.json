@@ -1,0 +1,30 @@
+{
+  "name": "nxapi-shop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "seed": "node --env-file=.env prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "6.6",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.9.0",
+    "jsonwebtoken": "^9.0.3",
+    "next": "16.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "swagger-ui-dist": "^5.31.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "prisma": "6.6",
+    "tailwindcss": "^4"
+  }
+}
