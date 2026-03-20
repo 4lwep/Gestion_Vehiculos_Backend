@@ -15,36 +15,98 @@ model User {
   isActive Boolean  @default(true)
   roles    String[] @default(["user"])
 
-  products Product[]
-
   @@map("users")
 }
 
-model Product {
-  id          String   @id @default(uuid())
-  title       String   @unique
-  price       Float    @default(0)
-  description String?
-  slug        String   @unique
-  stock       Int      @default(0)
-  sizes       String[]
-  gender      String
-  tags        String[] @default([])
+model Conductor {
+  dni       String @id
+  nombre    String
+  apellidos String
+  telefono  String
+  direccion String
+  edad      Int
 
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
-
-  images ProductImage[]
-
-  @@map("products")
+  vehiculo                Vehiculo[]
+  infoEspecificaTrayectos InfoEspecificaTrayecto[]
 }
 
-model ProductImage {
+model InfoEspecificaTrayecto {
+  id           Int        @id
+  activo       Boolean
+  completado   Boolean //Esto tal vez no sea necesario
+  gasto        Float //Esto se peuede calcular en el backend según el vehículo y así no tengo que duplicar trayectos
+  conductor    Conductor? @relation(fields: [conductorDni], references: [dni]) // Tal vez se pueda hacer un array por si varios conductores hacen el mismo trayecto no duplicarlos
+  conductorDni String?
+  trayecto     Trayecto?  @relation(fields: [trayectoId], references: [id])
+  trayectoId   Int?
+}
+
+model Trayecto {
+  id            Int      @id
+  horaSalida    DateTime
+  horaLlegada   DateTime
+  origen        String
+  destino       String
+  distanciaEnKm Float
+
+  infoEspecifica InfoEspecificaTrayecto[]
+  viaje          Viaje?                   @relation(fields: [viajeId], references: [id])
+  viajeId        Int?
+}
+
+model Viaje {
+  id        Int        @id
+  trayectos Trayecto[]
+}
+
+model Vehiculo {
+  matricula         String           @id @default(uuid())
+  marca             String           @unique
+  modelo            String
+  fechaCompra       DateTime
+  anyosAntiguedad   String
+  tipo              String
+  kilometrosTotales Float
+  alimentacion      String
+  precio            Float            @default(0)
+  nuevo             Boolean
+  gastoPorKm        Float
+  imagen            ImagenVehiculo[]
+
+  conductorDni String?
+  conductor    Conductor? @relation(fields: [conductorDni], references: [dni])
+
+  averia   Averia? @relation(fields: [averiaId], references: [id])
+  averiaId Int?
+
+  @@map("vehiculos")
+}
+
+//Para ir a la revision hace falta un trayecto
+model Revision {
+  id       Int      @id
+  fecha    DateTime
+  lugar    String
+  activo   Boolean
+  aprobada Boolean
+}
+
+//Para ir a la reparación de la avería hace falta un trayecto
+model Averia {
+  id              Int      @id
+  descripcion     String
+  fechaReparacion DateTime
+  lugarReparacion String
+
+  vehiculosAveriados Vehiculo[]
+}
+
+model ImagenVehiculo {
   id  Int    @id @default(autoincrement())
   url String @unique
 
-  productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  vehiculoId String?
+  vehiculo   Vehiculo? @relation(fields: [vehiculoId], references: [matricula], onDelete: Cascade)
 
-  @@map("product_images")
+  @@map("imagenes_vehiculo")
 }
