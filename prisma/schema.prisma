@@ -19,12 +19,12 @@ model User {
 }
 
 model Conductor {
-  dni       String @id
-  nombre    String
-  apellidos String
-  telefono  String
-  direccion String
-  edad      Int
+  dni             String   @id
+  nombre          String
+  apellidos       String
+  telefono        String
+  direccion       String
+  fechaNacimiento DateTime
 
   vehiculo                Vehiculo[]
   infoEspecificaTrayectos InfoEspecificaTrayecto[]
@@ -93,10 +93,13 @@ model Revision {
 
 //Para ir a la reparación de la avería hace falta un trayecto
 model Averia {
-  id              Int      @id
-  descripcion     String
-  fechaReparacion DateTime
-  lugarReparacion String
+  id                      Int      @id
+  descripcion             String
+  fechaAveria             DateTime
+  fechaComienzoReparacion DateTime
+  fechaFinReparacion      DateTime
+  lugarReparacion         String
+  costeReparacion         Float
 
   vehiculosAveriados Vehiculo[]
 }
