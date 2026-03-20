@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 
 
 
-const FOLDER = 'shop';
+const FOLDER = 'vehiculos';
 
 
 
@@ -71,7 +71,7 @@ export async function POST(request) {
                     gravity: "center",
                     invalidate: true,
                     use_filename: true,
-                    unique_filename: true, // public ID: false -> imagename, true -> imagename_z7ybio
+                    unique_filename: true,
                 },
                 (error, result) => {
                     if (error) {

@@ -4,7 +4,7 @@ import path from "node:path";
 import jwt from "jsonwebtoken";
 import prisma from "@/lib/prisma";
 
-const FOLDER = 'shop';
+const FOLDER = 'vehiculos';
 
 
 export async function GET(request, { params }) {
@@ -175,4 +175,3 @@ export async function DELETE(request, { params }) {
         );
     }
 }
-
