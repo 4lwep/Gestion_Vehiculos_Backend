@@ -6,16 +6,16 @@ import { NextResponse } from "next/server";
 
 
 export async function POST(request) {
-    const { email, password } = await request.json();
+    const { dni, password } = await request.json();
 
-    if (!email || !password) {
+    if (!dni || !password) {
         return NextResponse.json(
-            { error: "Missing email or password" },
+            { error: "Missing DNI or password" },
             { status: 400 }
         )
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { dni } });
 
     if (!user) {
         return NextResponse.json(
@@ -33,13 +33,13 @@ export async function POST(request) {
         )
     }
 
-    const { id, fullName, isActive, roles } = user;
+    const { fullName, isActive, roles, email } = user;
 
     // FIRMAMOS TOKEN
-    const token = jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "2h" });
+    const token = jwt.sign({ dni }, process.env.JWT_SECRET, { expiresIn: "2h" });
 
     return NextResponse.json(
-        { id, email, fullName, isActive, roles, token },
+        { dni, email, fullName, isActive, roles, token },
         { status: 201, statusText: "Login successful" }
     )
 }
